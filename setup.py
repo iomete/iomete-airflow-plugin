@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md") as readme_file:
     readme = readme_file.read()
@@ -20,6 +20,9 @@ setup(
     name="iomete_airflow_plugin",
     url="https://github.com/iomete/iomete-airflow-plugin",
     version="0.1.0",
+    packages=find_packages(
+        include=["iomete_airflow_plugin", "iomete_airflow_plugin.*"]
+    ),
     entry_points={
         "airflow.plugins": [
             "iomete = iomete_airflow_plugin.plugin:IometePlugin"

@@ -59,7 +59,7 @@ class IometeOperator(BaseOperator):
     def execute(self, context):
         self.log.info("Submitting IOMETE Job")
         hook = IometeHook(self.workspace_id)
-        self.run_id = hook.submit_job_run(self.job_id, {})["id"]
+        self.run_id = hook.submit_job_run(self.job_id, self.config_override)["id"]
         self.log.info(f"IOMETE Job submitted. Run ID {self.run_id}")
         self._monitor_app(hook, context)
 
