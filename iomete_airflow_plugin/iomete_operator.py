@@ -7,6 +7,7 @@ from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from iomete_airflow_plugin.hook import IometeHook
+from iomete_airflow_plugin.json_serializer import serialize_to_dict
 
 XCOM_RUN_ID_KEY = "job_run_id"
 XCOM_JOB_ID_KEY = "job_id"
@@ -18,7 +19,7 @@ class IometeOperator(BaseOperator):
     """
 
     # Used in airflow.models.BaseOperator
-    template_fields = ("job_id", "workspace_id", "config_override")
+    template_fields = ("job_id", "config_override")
     template_ext = (".json",)
 
     # IOMETE blue color with white text
@@ -29,7 +30,6 @@ class IometeOperator(BaseOperator):
     def __init__(
             self,
             job_id: Optional[str] = None,
-            workspace_id: Optional[str] = None,
             config_override: Optional[Union[Dict, str]] = None,
             polling_period_seconds: int = 10,
             do_xcom_push: bool = False,
@@ -47,8 +47,10 @@ class IometeOperator(BaseOperator):
         self.job_id = job_id
         self.polling_period_seconds = polling_period_seconds
 
-        self.workspace_id = workspace_id
-        self.config_override = config_override
+        if not config_override:
+            self.config_override = {}
+        else:
+            self.config_override = config_override
 
         if self.job_id is None:
             raise AirflowException(
@@ -58,13 +60,14 @@ class IometeOperator(BaseOperator):
 
     def execute(self, context):
         self.log.info("Submitting IOMETE Job")
-        hook = IometeHook(self.workspace_id)
-        self.run_id = hook.submit_job_run(self.job_id, self.config_override)["id"]
+        hook = IometeHook()
+        dict_data = serialize_to_dict(self.config_override)
+        self.run_id = hook.submit_job_run(self.job_id, dict_data)["id"]
         self.log.info(f"IOMETE Job submitted. Run ID {self.run_id}")
         self._monitor_app(hook, context)
 
     def on_kill(self):
-        hook = IometeHook(self.workspace_id)
+        hook = IometeHook()
         hook.cancel_job_run(self.job_id, self.run_id)
         self.log.info(
             "Task: %s with job id: %s was requested to be cancelled.",
@@ -99,7 +102,7 @@ class IometeOperator(BaseOperator):
 
 
 def _get_state_from_app(app):
-    return ApplicationStateType(app.get("driver_status", ""))
+    return ApplicationStateType(app.get("driverStatus", ""))
 
 
 class ApplicationStateType(Enum):

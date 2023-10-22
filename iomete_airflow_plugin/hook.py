@@ -2,24 +2,18 @@ from airflow import AirflowException
 from airflow.hooks.base import BaseHook
 from airflow.models import Variable
 
-from iomete_sdk import SparkJobApiClient
+from iomete_sdk.spark import SparkJobApiClient
 
 
 class IometeHook(BaseHook):
-    def __init__(self, workspace_id):
+    def __init__(self):
         super().__init__()
-        self.iom_access_token = Variable.get("iomete_access_token")
-
-        self.iom_workspace_id = workspace_id or Variable.get(key="iomete_workspace_id", default_var=None)
-        if self.iom_workspace_id is None:
-            raise AirflowException(
-                "Parameter `workspace_id` should be specified "
-                "or defined in Airflow Variables with `iomete_default_workspace_id` key."
-            )
+        self.host = Variable.get("iomete_host")
+        self.access_token = Variable.get("iomete_access_token")
 
         self.iom_client = SparkJobApiClient(
-            workspace_id=self.iom_workspace_id,
-            api_key=self.iom_access_token,
+            host=self.host,
+            api_key=self.access_token,
         )
 
     def submit_job_run(self, job_id, payload):

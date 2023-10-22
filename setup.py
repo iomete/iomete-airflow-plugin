@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     name="iomete_airflow_plugin",
     url="https://github.com/iomete/iomete-airflow-plugin",
-    version="0.1.0",
+    version="1.0.0",
     packages=find_packages(
         include=["iomete_airflow_plugin", "iomete_airflow_plugin.*"]
     ),
@@ -36,6 +36,6 @@ setup(
         "requests",
         "setuptools~=67.0.0",
         "Flask~=2.2.3",
-        "iomete-sdk==1.0.1",
+        "iomete-sdk==2.0.0",
     ],
 )

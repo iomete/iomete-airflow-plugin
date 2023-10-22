@@ -11,8 +11,7 @@ args = {
 dag = DAG(dag_id="iomete-task", default_args=args, schedule_interval=None)
 
 task = IometeOperator(
-    task_id="query-scheduler-task",
-    job_id="1b0fc29b-5491-4c0a-94ea-48e304c3c72e",
-    workspace_id="pceh7-816",
+    task_id="iomete-catalog-sync-task",
+    job_id="0761a510-3a66-4c72-b06e-9d071f30d85d",
     dag=dag,
 )
