@@ -12,7 +12,7 @@ Restart you server and check the plugins page on Airflow's admin panel to make s
 
 ## Configuration
 
-You need to add `iomete_access_token` key to airflow's Variables module.  
+You need to add `iomete_access_token` and `iomete_host` keys to airflow's Variables page.  
 Check our documentation page on how to generate personal access token.
 
 ## Usage
@@ -27,7 +27,6 @@ dag = DAG(dag_id="...", default_args={}, schedule_interval=None)
 task = IometeOperator(
     task_id="random_task_id",
     job_id="1b0fc29b-5491-4c0a-94ea-48e304c3c72e", # Spark Job ID or Name in IOMETE platform.
-    workspace_id="pceh7-816", # Your workspace ID in IOMETE platform
     dag=dag,
 )
 
