@@ -19,7 +19,7 @@ setup(
     include_package_data=True,
     name="iomete_airflow_plugin",
     url="https://github.com/iomete/iomete-airflow-plugin",
-    version="1.0.1",
+    version="1.0.2",
     packages=find_packages(
         include=["iomete_airflow_plugin", "iomete_airflow_plugin.*"]
     ),

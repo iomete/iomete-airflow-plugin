@@ -1,4 +1,4 @@
-import time
+import time, json
 from enum import Enum
 
 from typing import Dict, Optional, Union
@@ -7,7 +7,6 @@ from airflow.exceptions import AirflowException
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from iomete_airflow_plugin.hook import IometeHook
-from iomete_airflow_plugin.json_serializer import serialize_to_dict
 
 XCOM_RUN_ID_KEY = "job_run_id"
 XCOM_JOB_ID_KEY = "job_id"
@@ -33,6 +32,7 @@ class IometeOperator(BaseOperator):
             config_override: Optional[Union[Dict, str]] = None,
             polling_period_seconds: int = 10,
             do_xcom_push: bool = False,
+            variable_prefix: str = "iomete_",
             **kwargs,
     ):
         """
@@ -47,6 +47,8 @@ class IometeOperator(BaseOperator):
         self.job_id = job_id
         self.polling_period_seconds = polling_period_seconds
 
+        self.variable_prefix = variable_prefix
+
         if not config_override:
             self.config_override = {}
         else:
@@ -60,14 +62,18 @@ class IometeOperator(BaseOperator):
 
     def execute(self, context):
         self.log.info("Submitting IOMETE Job")
-        hook = IometeHook()
+        hook = IometeHook(
+            variable_prefix=self.variable_prefix,
+        )
         dict_data = serialize_to_dict(self.config_override)
         self.run_id = hook.submit_job_run(self.job_id, dict_data)["id"]
         self.log.info(f"IOMETE Job submitted. Run ID {self.run_id}")
         self._monitor_app(hook, context)
 
     def on_kill(self):
-        hook = IometeHook()
+        hook = IometeHook(
+            variable_prefix=self.variable_prefix,
+        )
         hook.cancel_job_run(self.job_id, self.run_id)
         self.log.info(
             "Task: %s with job id: %s was requested to be cancelled.",
@@ -99,6 +105,27 @@ class IometeOperator(BaseOperator):
                 self.log.info("%s in app state: %s", self.task_id, app_state.value)
                 self.log.info("Sleeping for %s seconds.", self.polling_period_seconds)
                 time.sleep(self.polling_period_seconds)
+
+
+def serialize_to_dict(config_override: Optional[Union[Dict, str]] = None) -> Dict:
+    if config_override is None:
+        return {}
+
+    if isinstance(config_override, dict):
+        return config_override
+
+    # Try parsing the string as JSON
+    try:
+        return json.loads(config_override)
+    except json.JSONDecodeError:
+        pass
+
+    # If not valid JSON, assume it's a Python dict string and try to convert to a dict
+    try:
+        # Convert string representation of dict to actual dict
+        return eval(config_override)
+    except:
+        raise ValueError(f"Unsupported format for config_override: {config_override}")
 
 
 def _get_state_from_app(app):

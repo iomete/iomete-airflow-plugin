@@ -1,15 +1,20 @@
-from airflow import AirflowException
+from abc import ABC
+
 from airflow.hooks.base import BaseHook
 from airflow.models import Variable
 
 from iomete_sdk.spark import SparkJobApiClient
 
 
-class IometeHook(BaseHook):
-    def __init__(self):
+class IometeHook(BaseHook, ABC):
+    def __init__(
+            self,
+            variable_prefix: str = "iomete_",
+    ):
         super().__init__()
-        self.host = Variable.get("iomete_host")
-        self.access_token = Variable.get("iomete_access_token")
+
+        self.host = Variable.get(variable_prefix + "host")
+        self.access_token = Variable.get(variable_prefix + "access_token")
 
         self.iom_client = SparkJobApiClient(
             host=self.host,

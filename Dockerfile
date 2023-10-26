@@ -1,6 +1,8 @@
-FROM apache/airflow:2.5.2
+FROM apache/airflow:2.7.1
 
-RUN pip install Flask~=2.2.3 iomete-sdk==1.0.1
+USER root
 
-COPY --chown=airflow:airflow . /opt/iomete_airflow_plugin/
-RUN pip install --user -e /opt/iomete_airflow_plugin/
+RUN apt-get update
+RUN pip install Flask~=2.2.3 iomete-sdk iomete-airflow-plugin apache-airflow-providers-trino
+
+USER airflow
