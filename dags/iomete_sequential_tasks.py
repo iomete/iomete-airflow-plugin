@@ -8,18 +8,20 @@ args = {
     "start_date": utils.dates.days_ago(0, second=1),
 }
 
-dag = DAG(dag_id="iomete-sequential-tasks-1", default_args=args, schedule_interval=None)
+dag = DAG(dag_id="iomete-demo", default_args=args, schedule_interval=None)
 
-task1 = IometeOperator(
-    task_id="first-run-catalog-sync-task",
-    job_id="0761a510-3a66-4c72-b06e-9d071f30d85d",
+catalogTask = IometeOperator(
+    task_id="task-01-sync-catalog",
+    job_id="iomete-catalog-sync",
     dag=dag,
+    variable_prefix="iomete_"
 )
 
-task2 = IometeOperator(
-    task_id="second-run-sql-runner-task",
+sqlTask = IometeOperator(
+    task_id="task-02-run-sql",
     job_id="sql-runner",
     dag=dag,
+    variable_prefix="iomete_"
 )
 
-task1 >> task2
+sqlTask >> catalogTask

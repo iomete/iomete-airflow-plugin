@@ -6,3 +6,8 @@ docker-compose up --build
 ```
 Custom Airflow DAGs should be added to `dags` folder.  
 After each change you need to restart docker container.
+
+
+```shell
+docker buildx build --platform linux/amd64,linux/arm64 --push -f Dockerfile -t iomete/airflow:2.7.1 .
+```
